@@ -1,6 +1,4 @@
-package Common;
-
-import org.omg.CORBA.UNKNOWN;
+package common;
 
 public enum ErrorCode {
     SUCCESS(0, "ok"),

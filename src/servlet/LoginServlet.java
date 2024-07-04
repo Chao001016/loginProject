@@ -1,7 +1,7 @@
 package servlet;
 
-import Common.BaseResponse;
-import Common.ErrorCode;
+import common.BaseResponse;
+import common.ErrorCode;
 import com.alibaba.fastjson.JSONObject;
 
 import javax.servlet.ServletRequestEvent;
@@ -18,10 +18,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import DB.DataBase;
+import db.DataBase;
 import com.alibaba.fastjson.JSON;
-import POJO.User;
-import org.apache.commons.codec.cli.Digest;
+import pojo.User;
 import org.apache.commons.codec.digest.DigestUtils;
 
 @WebListener
@@ -29,6 +28,7 @@ public class LoginServlet extends HttpServlet implements ServletRequestListener 
     public void doPost (HttpServletRequest req, HttpServletResponse res) throws IOException {
         res.setContentType("application/type");
         res.setCharacterEncoding("UTF-8");
+        // 一.请求参数读取
         String line;
         StringBuilder data = new StringBuilder();
         BufferedReader reader = req.getReader();
@@ -39,6 +39,7 @@ public class LoginServlet extends HttpServlet implements ServletRequestListener 
         String userAccount = (String) jobj.get("userAccount");
         String password = (String) jobj.get("password");
         String encryptPwd = DigestUtils.md5Hex("yupi" + password);
+        // 二。业务逻辑
         // 1.校验数据是否合法
         //  账号不含包含特殊字符
         String regEx = "[\\u00A0\\s\"`~!@#$%^&*()+=|{}':;',\\[\\].<>/&#63;~！@#￥%……&*（）——+|{}【】‘；：”“'。，、？]";
@@ -54,6 +55,7 @@ public class LoginServlet extends HttpServlet implements ServletRequestListener 
             BaseResponse br = new BaseResponse(ErrorCode.PARAM_ERROR, "密码不合法");
             res.getWriter().write(JSON.toJSONString(br));
         }
+        // 三.数据库交互
         // 2.判断账号密码是否正确
         Connection conn = DataBase.getConn();
         String sql = "select * from user where userAccount=? and userPassword=?";
@@ -67,6 +69,7 @@ public class LoginServlet extends HttpServlet implements ServletRequestListener 
             while(rs.next()) {
                 user.setId(rs.getLong("id"));
                 user.setUsername(rs.getString("username"));
+                user.setUsername(rs.getString("userAccount"));
                 user.setAvatorUrl(rs.getString("avatorUrl"));
                 user.setGender(rs.getInt("gender"));
                 user.setUserRole(rs.getString("userRole"));
@@ -79,6 +82,7 @@ public class LoginServlet extends HttpServlet implements ServletRequestListener 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        // 四.返回结果封装
         // 3.返回登陆成功结果
         BaseResponse br;
         if (user.getId() != null) {

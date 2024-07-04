@@ -1,4 +1,4 @@
-package DB;
+package db;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -7,7 +7,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-@WebListener
 public class DataBase implements ServletContextListener {
     private static Connection conn;
 
@@ -36,12 +35,14 @@ public class DataBase implements ServletContextListener {
         }
         return conn;
     }
+
     @Override
-    public void contextInitialized(ServletContextEvent servletContextEvent) {
-        initConn();
+    public void contextInitialized(ServletContextEvent sce) {
+        ServletContextListener.super.contextInitialized(sce);
     }
 
     @Override
-    public void contextDestroyed(ServletContextEvent servletContextEvent) {
+    public void contextDestroyed(ServletContextEvent sce) {
+        ServletContextListener.super.contextDestroyed(sce);
     }
 }
