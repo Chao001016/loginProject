@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @WebServlet(urlPatterns = "/addQuestion", name = "addQuestion")
-public class AddQuestionServlet extends UserServlet {
+public class AddQuestionServlet extends CommonServlet {
 
     @Override
     public BaseResponse service(JSONObject jsonObject, HttpServletRequest req, HttpServletResponse res) throws SQLException {
@@ -46,47 +46,47 @@ public class AddQuestionServlet extends UserServlet {
         Connection conn = DataBase.getConn();
         int paramNum = getParamNum(jsonObject);
         String sql = getInsertSql(jsonObject, paramNum);
-        sql = sql.replaceFirst("\\?", "content");
-        sql = sql.replaceFirst("\\?", "type");
+        sql = sql.replaceFirst("#", "content");
+        sql = sql.replaceFirst("#", "type");
         if (score != null) {
-            sql = sql.replaceFirst("\\?", "score");
+            sql = sql.replaceFirst("#", "score");
         }
         if (answer != null) {
-            sql = sql.replaceFirst("\\?", "answer");
+            sql = sql.replaceFirst("#", "answer");
         }
         if (state != null) {
-            sql = sql.replaceFirst("\\?", "state");
+            sql = sql.replaceFirst("#", "state");
         }
         if (analysis != null) {
-            sql = sql.replaceFirst("\\?", "analysis");
+            sql = sql.replaceFirst("#", "analysis");
         }
         if (options != null) {
-            sql = sql.replaceFirst("\\?", "options");
+            sql = sql.replaceFirst("#", "options");
         }
         if (tag != null) {
-            sql = sql.replaceFirst("\\?", "tag");
+            sql = sql.replaceFirst("#", "tag");
         }
         PreparedStatement pstt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
         pstt.setString(1, content);
         pstt.setInt(2, type);
-
+        int parameterIndex = 3;
         if (score != null) {
-            pstt.setInt(3, score);
+            pstt.setInt(parameterIndex++, score);
         }
         if (answer != null) {
-            pstt.setString(4, answer);
+            pstt.setString(parameterIndex++, answer);
         }
         if (state != null) {
-            pstt.setInt(5, state);
+            pstt.setInt(parameterIndex++, state);
         }
         if (analysis != null) {
-            pstt.setString(6, analysis);
+            pstt.setString(parameterIndex++, analysis);
         }
         if (options != null) {
-            pstt.setString(7, options);
+            pstt.setString(parameterIndex++, options);
         }
         if (tag != null) {
-            pstt.setString(8, tag);
+            pstt.setString(parameterIndex, tag);
         }
         pstt.execute();
         int questionId;
@@ -101,7 +101,7 @@ public class AddQuestionServlet extends UserServlet {
 
     public static void main(String[] args) throws SQLException {
         String a = "??";
-        System.out.println(a.replaceFirst("\\?", "1"));
+        System.out.println(a.replaceFirst("#", "1"));
         Map map = new HashMap<String ,Object>();
         map.put("name", "lichao");
         map.put("age", "18");
@@ -118,11 +118,15 @@ public class AddQuestionServlet extends UserServlet {
         return paramNum.get();
     }
     private static String getInsertSql (JSONObject jsonObject, int paramNum) throws SQLException {
-        String sql = "insert into question(#dynamicColumn) values(#dynamicColumn)";
-        Character[] param = new Character[paramNum];
-        Arrays.fill(param, '?');
-        String dynamicColumn = Common.join(param,",");
+        String sql = "insert into question(#dynamicColumn) values(#dynamicValue)";
+        Character[] paramColumn = new Character[paramNum];
+        Character[] paramValue = new Character[paramNum];
+        Arrays.fill(paramColumn, '#');
+        Arrays.fill(paramValue, '?');
+        String dynamicColumn = Common.join(paramColumn,",");
+        String dynamicValue = Common.join(paramValue,",");
         sql = sql.replaceAll("#dynamicColumn", dynamicColumn);
+        sql = sql.replaceAll("#dynamicValue", dynamicValue);
         return sql;
     }
 }

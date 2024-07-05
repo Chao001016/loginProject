@@ -14,8 +14,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.sql.SQLException;
 
-public abstract class UserServlet extends HttpServlet {
-    public UserServlet() {
+public abstract class CommonServlet extends HttpServlet {
+    public CommonServlet() {
         super();
     }
 
@@ -50,6 +50,7 @@ public abstract class UserServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.setCharacterEncoding("UTF-8");
         resp.setContentType("application/type");
         resp.setCharacterEncoding("UTF-8");
         JSONObject jsonObject = getParameter(req);

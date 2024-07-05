@@ -6,25 +6,21 @@ import common.Common;
 import common.ErrorCode;
 import common.ResultUtils;
 import db.DataBase;
-import pojo.Question;
-import pojo.QuestionResponse;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@WebServlet(urlPatterns = "/queryQuestion", name = "queryQuestion")
-public class QueryQuestionServlet extends CommonServlet {
+@WebServlet(urlPatterns = "/updateQuestionById", name = "updateQuestionById")
+public class UpdateQuestionById extends CommonServlet {
     @Override
     public BaseResponse service(JSONObject jsonObject, HttpServletRequest req, HttpServletResponse res) throws SQLException {
-        // 1.获取参数
+        // 1.参数获取
         Long id = jsonObject.getLong("id");
         String content = jsonObject.getString("content");
         Integer type = jsonObject.getInteger("type");
@@ -35,26 +31,21 @@ public class QueryQuestionServlet extends CommonServlet {
         String options = jsonObject.getString("options");
         String tag = jsonObject.getString("tag");
         // 2.业务逻辑
-        // 查询选项不能存在为空的
+        // id 不能为空
+        if (id == null) return ResultUtils.error(ErrorCode.PARAM_ERROR, "id不能为空");
         if (content == null && type == null && score == null &&
-            answer == null && state == null && analysis == null &&
-            options == null && tag == null && id == null) {
+                answer == null && state == null && analysis == null &&
+                options == null && tag == null) {
             return ResultUtils.error(ErrorCode.PARAM_ERROR, "错误的请求参数");
         }
-        // 3.数据库交互
-        String sql = getQuerySql(jsonObject);
-        Connection conn = DataBase.getConn();
-        if (content != null) {
-            sql = sql.replaceFirst("#", "content");
-        }
-        if (id != null) {
-            sql = sql.replaceFirst("#", "id");
-        }
-        if (type != null) {
-            sql = sql.replaceFirst("#", "type");
-        }
+        // 3.数据交互
+        // 获取更新sql
+        String sql = getUpdateSql(jsonObject);
         if (score != null) {
             sql = sql.replaceFirst("#", "score");
+        }
+        if (content != null) {
+            sql = sql.replaceFirst("#", "content");
         }
         if (answer != null) {
             sql = sql.replaceFirst("#", "answer");
@@ -71,19 +62,15 @@ public class QueryQuestionServlet extends CommonServlet {
         if (tag != null) {
             sql = sql.replaceFirst("#", "tag");
         }
+        Connection conn = DataBase.getConn();
         PreparedStatement pstt = conn.prepareStatement(sql);
+        System.out.println(content);
         int parameterIndex = 1;
-        if (content != null) {
-            pstt.setString(parameterIndex++, content);
-        }
-        if (id != null) {
-            pstt.setLong(parameterIndex++, id);
-        }
-        if (type != null) {
-            pstt.setInt(parameterIndex++, type);
-        }
         if (score != null) {
             pstt.setInt(parameterIndex++, score);
+        }
+        if (content != null) {
+            pstt.setString(parameterIndex++, content);
         }
         if (answer != null) {
             pstt.setString(parameterIndex++, answer);
@@ -98,27 +85,15 @@ public class QueryQuestionServlet extends CommonServlet {
             pstt.setString(parameterIndex++, options);
         }
         if (tag != null) {
-            pstt.setString(parameterIndex, tag);
+            pstt.setString(parameterIndex++, tag);
         }
-        ResultSet rs = pstt.executeQuery();
-        ArrayList<QuestionResponse> questionResponseArrayList = new ArrayList<>();
-        while (rs.next()) {
-            QuestionResponse question = new QuestionResponse();
-            question.setId(rs.getLong("id"));
-            question.setCreator(rs.getLong("creator"));
-            question.setContent(Common.resolveBytes((rs.getBytes("content"))));
-            question.setType(rs.getInt("type"));
-            question.setScore(rs.getInt("score"));
-            question.setState(rs.getInt("state"));
-            question.setAnswer(Common.resolveBytes(rs.getBytes("answer")));
-            question.setAnalysis(Common.resolveBytes(rs.getBytes("analysis")));
-            question.setUpdateTime(rs.getTimestamp("update_time"));
-            question.setCreateTime(rs.getTimestamp("create_time"));
-            questionResponseArrayList.add(question);
+        pstt.setLong(parameterIndex, id);
+        int num = pstt.executeUpdate();
+        if (num > 0) {
+            return ResultUtils.success(null);
+        } else {
+            return ResultUtils.error(ErrorCode.UNKNOWN_ERROR, "更新失败");
         }
-         //
-        // 4.返回参数
-        return ResultUtils.success(questionResponseArrayList);
     }
 
     private static int getParamNum (JSONObject jsonObject) {
@@ -131,13 +106,13 @@ public class QueryQuestionServlet extends CommonServlet {
         return paramNum.get();
     }
 
-    private static String getQuerySql (JSONObject jsonObject) throws SQLException {
-        int paramNum = getParamNum(jsonObject);
-        String sql = "select * from question where #dynamicColumn";
-        String[] param = new String[paramNum];
-        Arrays.fill(param, "#=?");
-        String dynamicColumn = Common.join(param," and ");
-        sql = sql.replaceAll("#dynamicColumn", dynamicColumn);
+    public static String getUpdateSql (JSONObject jsonObject) {
+        String sql = "update question set #dynamicKeyVal where id=?";
+        int paramNum = getParamNum(jsonObject) - 1;
+        String[] keyValueArr = new String[paramNum];
+        Arrays.fill(keyValueArr, "#=?");
+        String dynamicKeyVal = Common.join(keyValueArr, ",");
+        sql = sql.replaceAll("#dynamicKeyVal", dynamicKeyVal);
         return sql;
     }
 }

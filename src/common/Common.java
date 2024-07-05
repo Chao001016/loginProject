@@ -1,5 +1,6 @@
 package common;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 public class Common {
@@ -21,6 +22,6 @@ public class Common {
      */
     public static String resolveBytes(byte[] bytes) {
         if (bytes == null) return null;
-        return new String(bytes);
+        return new String(bytes, StandardCharsets.UTF_8);
     }
 }
