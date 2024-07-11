@@ -20,37 +20,46 @@
             <option name="moduleUIInfoList">
               <list>
                 <ModuleInfoGo>
-                  <option name="basePath" value="src/mybatisX" />
-                  <option name="configFileName" value="domain.ftl" />
-                  <option name="configName" value="domain" />
-                  <option name="encoding" value="UTF-8" />
-                  <option name="fileName" value="${domain.fileName}" />
-                  <option name="fileNameWithSuffix" value="${domain.fileName}.java" />
+                  <option name="basePath" value="${domain.basePath}" />
+                  <option name="configFileName" value="mapperInterface.ftl" />
+                  <option name="configName" value="mapperInterface" />
+                  <option name="encoding" value="${domain.encoding}" />
+                  <option name="fileName" value="${domain.fileName}Mapper" />
+                  <option name="fileNameWithSuffix" value="${domain.fileName}Mapper.java" />
                   <option name="modulePath" value="$PROJECT_DIR$" />
-                  <option name="packageName" value="generator.domain" />
+                  <option name="packageName" value="${domain.basePackage}.mapper" />
+                </ModuleInfoGo>
+                <ModuleInfoGo>
+                  <option name="basePath" value="src/main/resources" />
+                  <option name="configFileName" value="mapperXml.ftl" />
+                  <option name="configName" value="mapperXml" />
+                  <option name="encoding" value="${domain.encoding}" />
+                  <option name="fileName" value="${domain.fileName}Mapper" />
+                  <option name="fileNameWithSuffix" value="${domain.fileName}Mapper.xml" />
+                  <option name="modulePath" value="$PROJECT_DIR$" />
+                  <option name="packageName" value="mapper" />
                 </ModuleInfoGo>
               </list>
             </option>
             <option name="needToStringHashcodeEquals" value="true" />
             <option name="needsComment" value="true" />
-            <option name="needsModel" value="true" />
+            <option name="needsModel" value="false" />
             <option name="relativePackage" value="domain" />
             <option name="superClass" value="" />
             <option name="tableUIInfoList">
               <list>
                 <TableUIInfo>
-                  <option name="className" value="Test" />
-                  <option name="tableName" value="test" />
+                  <option name="className" value="Question" />
+                  <option name="tableName" value="question" />
                 </TableUIInfo>
               </list>
             </option>
-            <option name="templatesName" value="custom-model-swagger" />
-            <option name="useLombokPlugin" value="true" />
+            <option name="templatesName" value="default-empty" />
           </GenerateConfig>
         </option>
         <option name="moduleName" value="loginProject" />
         <option name="projectPath" value="$PROJECT_DIR$" />
-        <option name="templateName" value="custom-model-swagger" />
+        <option name="templateName" value="default-empty" />
       </TemplateContext>
     </option>
   </component>

@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @WebServlet(urlPatterns = "/addQuestion", name = "addQuestion")
-public class AddQuestionServlet extends CommonServlet {
+public class AddQuestionServlet extends CommonServlet<JSONObject> {
 
     @Override
     public BaseResponse service(JSONObject jsonObject, HttpServletRequest req, HttpServletResponse res) throws SQLException {

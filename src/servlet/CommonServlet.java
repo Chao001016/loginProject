@@ -3,6 +3,7 @@ package servlet;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import common.BaseResponse;
+import common.Reflect.ProxyWrapper;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -12,15 +13,32 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
-public abstract class CommonServlet extends HttpServlet {
+public abstract class CommonServlet<T> extends HttpServlet {
     public CommonServlet() {
         super();
     }
 
-    public abstract BaseResponse service(JSONObject jsonObject, HttpServletRequest req, HttpServletResponse res) throws SQLException;
+    public abstract BaseResponse service(T jsonObject, HttpServletRequest req, HttpServletResponse res) throws SQLException;
 
+    private T getGenericType () throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        T superclass = (T) getClass().getGenericSuperclass();
+//        if (superclass instanceof Class) {
+//            throw new RuntimeException("Missing type parameter.");
+//        }
+        Type type = ((ParameterizedType) superclass).getActualTypeArguments()[0];
+        Class clazz = Class.forName(type.getTypeName());
+        T genericType = (T) clazz.newInstance();
+        System.out.println(type.getTypeName());
+        return superclass;
+    }
     // 增加获取请求参数的方法
     public JSONObject getParameter (HttpServletRequest req) throws IOException {
         BufferedReader br = req.getReader();
@@ -55,12 +73,72 @@ public abstract class CommonServlet extends HttpServlet {
         resp.setCharacterEncoding("UTF-8");
         JSONObject jsonObject = getParameter(req);
         BaseResponse br = null;
+        ProxyWrapper proxyWrapper;
+        // 1.获取泛型类型
         try {
-            br = this.service(jsonObject, req, resp);
+            proxyWrapper = getProxyWrapper(jsonObject);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        // 2.装配泛型实例
+        assembleParameter(proxyWrapper, jsonObject);
+        try {
+            br = this.service((T) proxyWrapper.getProxy(), req, resp);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         resp.getWriter().write(JSON.toJSONString(br));
+    }
+
+    public void assembleParameter (ProxyWrapper proxyWrapper, JSONObject jsonObject) {
+        jsonObject.entrySet().forEach(info -> {
+            String key = info.getKey();
+            if (key != null) {
+                // 获取set方法
+                String methodName = "set" + key.substring(0, 1).toUpperCase() + key.substring(1);
+                Method m = proxyWrapper.getMethodByName(methodName);
+                try {
+                    m.invoke(proxyWrapper.getProxy(), info.getValue());
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                } catch (InvocationTargetException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+    }
+
+    private ProxyWrapper getProxyWrapper (JSONObject jsonObject) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        ProxyWrapper<T> proxyWrapper = new ProxyWrapper();
+        // 获取泛型类T的权限名
+        T superclass = (T) getClass().getGenericSuperclass();
+        if (superclass instanceof Class) {
+            throw new RuntimeException("Missing type parameter.");
+        }
+        Type type = ((ParameterizedType) superclass).getActualTypeArguments()[0];
+
+        // 创建泛型类T实例
+        Class clazz = Class.forName(type.getTypeName());
+        T obj = (T)clazz.newInstance();
+        if (obj instanceof JSONObject) {
+            proxyWrapper.setRequestData((T) jsonObject);
+            return proxyWrapper;
+        }
+        proxyWrapper.setRequestData(obj);
+        // 获取methods
+        Method[] methods = clazz.getDeclaredMethods();
+        Map map = new HashMap<String, Method>();
+        for (int i = 0; i < methods.length; i++) {
+            Method m = methods[i];
+            map.put(m.getName(), m);
+            System.out.println(m.getName());
+        }
+        proxyWrapper.setMethods(map);
+        return proxyWrapper;
     }
 
     @Override
@@ -93,3 +171,5 @@ public abstract class CommonServlet extends HttpServlet {
         super.service(req, res);
     }
 }
+
+

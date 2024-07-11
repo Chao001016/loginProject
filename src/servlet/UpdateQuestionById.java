@@ -1,5 +1,6 @@
 package servlet;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import common.BaseResponse;
 import common.Common;
@@ -17,7 +18,7 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @WebServlet(urlPatterns = "/updateQuestionById", name = "updateQuestionById")
-public class UpdateQuestionById extends CommonServlet {
+public class UpdateQuestionById extends CommonServlet<JSONObject> {
     @Override
     public BaseResponse service(JSONObject jsonObject, HttpServletRequest req, HttpServletResponse res) throws SQLException {
         // 1.参数获取

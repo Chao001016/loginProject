@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE root[
+        <!ELEMENT root ANY>
+        <!ELEMENT resultMap ANY>
+        <!ATTLIST resultMap
+                id ID #REQUIRED
+                >
+        <!ELEMENT result ANY>
+        <!ATTLIST result
+                property CDATA #REQUIRED
+                column CDATA #REQUIRED
+                jdbcType CDATA #REQUIRED>
+        <!ELEMENT id ANY>
+        <!ATTLIST id
+                property CDATA #REQUIRED
+                column CDATA #REQUIRED
+                jdbcType CDATA #REQUIRED>
+        ]>
+<root>
+    <resultMap id="pojo.Question">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="tag" column="tag" jdbcType="VARCHAR"/>
+        <result property="optionId" column="option_id" jdbcType="VARCHAR"/>
+        <result property="score" column="score" jdbcType="INTEGER"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="state " column="state" jdbcType="INTEGER"/>
+        <result property="creator" column="creator" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="isDelete" column="is_delete" jdbcType="TINYINT"/>
+    </resultMap>
+</root>
