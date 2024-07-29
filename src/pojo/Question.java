@@ -1,6 +1,7 @@
 package pojo;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -8,7 +9,6 @@ import java.util.Date;
 * @TableName question
 */
 public class Question implements Serializable {
-
     /**
     * 唯一标识
     */
@@ -52,15 +52,19 @@ public class Question implements Serializable {
     /**
     * 题目内容
     */
-    private byte[] content;
+    private String content;
     /**
     * 问题答案
     */
-    private byte[] answer;
+    private String answer;
     /**
     * 题目分析
     */
-    private byte[] analysis;
+    private String analysis;
+    /**
+     * 标签数组
+     */
+    private ArrayList<Tag> tagArrayList;
 
     /**
     * 唯一标识
@@ -72,7 +76,7 @@ public class Question implements Serializable {
     /**
     * 题目标签
     */
-    private void setTag(String tag){
+    public void setTag(String tag){
     this.tag = tag;
     }
 
@@ -94,7 +98,7 @@ public class Question implements Serializable {
     * 题目类型，1选择，2判断，3填空，4问题
     */
     public void setType(Integer type){
-    this.type = type;
+        this.type = type;
     }
 
     /**
@@ -129,28 +133,28 @@ public class Question implements Serializable {
     * 逻辑删除，1删除，0未被删除
     */
     public void setIsDelete(Integer isDelete){
-    this.isDelete = isDelete;
+    	this.isDelete = isDelete;
     }
 
     /**
     * 题目内容
     */
-    public void setContent(byte[] content){
-    this.content = content;
+    public void setContent(String content){
+    	this.content = content;
     }
 
     /**
     * 问题答案
     */
-    public void setAnswer(byte[] answer){
-    this.answer = answer;
+    public void setAnswer(String answer){
+    	this.answer = answer;
     }
 
     /**
     * 题目分析
     */
-    public void setAnalysis(byte[] analysis){
-    this.analysis = analysis;
+    public void setAnalysis(String analysis){
+    	this.analysis = analysis;
     }
 
 
@@ -200,7 +204,7 @@ public class Question implements Serializable {
     * 创建人
     */
     public Long getCreator(){
-    return this.creator;
+    	return this.creator;
     }
 
     /**
@@ -214,7 +218,7 @@ public class Question implements Serializable {
     * 更新时间
     */
     public Date getUpdateTime(){
-    return this.updateTime;
+        return this.updateTime;
     }
 
     /**
@@ -227,22 +231,29 @@ public class Question implements Serializable {
     /**
     * 题目内容
     */
-    public byte[] getContent(){
-    return this.content;
+    public String getContent(){
+        return this.content;
     }
 
     /**
     * 问题答案
     */
-    public byte[] getAnswer(){
+    public String getAnswer(){
     return this.answer;
     }
 
     /**
     * 题目分析
     */
-    public byte[] getAnalysis(){
+    public String getAnalysis(){
     return this.analysis;
     }
 
+    public ArrayList<Tag> getTagArrayList() {
+        return tagArrayList;
+    }
+
+    public void setTagArrayList(ArrayList<Tag> tagArrayList) {
+        this.tagArrayList = tagArrayList;
+    }
 }

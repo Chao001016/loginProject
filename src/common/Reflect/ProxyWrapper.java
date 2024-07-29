@@ -6,7 +6,7 @@ import java.util.Map;
 public class ProxyWrapper<T> {
     T proxy;
     Map<String, Method> methodMap;
-    public void setRequestData (T data) {
+    public void setProxy (T data) {
         this.proxy = data;
     }
     public void setMethods (Map<String, Method> methodMap) {
@@ -19,6 +19,14 @@ public class ProxyWrapper<T> {
         return this.methodMap;
     }
     public Method getMethodByName (String methodName) {
+        return this.methodMap.get(methodName);
+    }
+    public Method getSetterByName (String property) {
+        String methodName = "set" + property.substring(0, 1).toUpperCase() + property.substring(1);
+        return this.methodMap.get(methodName);
+    }
+    public Method getGetterByName (String property) {
+        String methodName = "get" + property.substring(0, 1).toUpperCase() + property.substring(1);
         return this.methodMap.get(methodName);
     }
 }

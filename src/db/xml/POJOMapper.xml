@@ -5,12 +5,14 @@
         <!ELEMENT resultMap ANY>
         <!ATTLIST resultMap
                 id ID #REQUIRED
+                tableName CDATA #REQUIRED
                 >
         <!ELEMENT result ANY>
         <!ATTLIST result
                 property CDATA #REQUIRED
                 column CDATA #REQUIRED
-                jdbcType CDATA #REQUIRED>
+                type CDATA #IMPLIED
+                jdbcType CDATA #IMPLIED>
         <!ELEMENT id ANY>
         <!ATTLIST id
                 property CDATA #REQUIRED
@@ -18,14 +20,38 @@
                 jdbcType CDATA #REQUIRED>
         ]>
 <root>
-    <resultMap id="pojo.Question">
-        <id property="id" column="id" jdbcType="BIGINT"/>
+    <resultMap id="pojo.Question" tableName="question">
+        <result property="id" column="id" jdbcType="BIGINT"/>
         <result property="tag" column="tag" jdbcType="VARCHAR"/>
         <result property="optionId" column="option_id" jdbcType="VARCHAR"/>
         <result property="score" column="score" jdbcType="INTEGER"/>
         <result property="type" column="type" jdbcType="INTEGER"/>
-        <result property="state " column="state" jdbcType="INTEGER"/>
-        <result property="creator" column="creator" jdbcType="VARCHAR"/>
+        <result property="content" column="content" jdbcType="VARCHAR"/>
+        <result property="answer" column="answer" jdbcType="VARCHAR"/>
+        <result property="analysis" column="analysis" jdbcType="VARCHAR"/>
+        <result property="state" column="state" jdbcType="INTEGER"/>
+        <result property="creator" column="creator" jdbcType="BIGINT"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="isDelete" column="is_delete" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <resultMap id="pojo.QuestionOption" tableName="question_option">
+        <result property="id" column="id" jdbcType="BIGINT"/>
+        <result property="content" column="content" jdbcType="VARCHAR"/>
+        <result property="qid" column="qid" jdbcType="BIGINT"/>
+        <result property="order" column="order" jdbcType="VARCHAR"/>
+        <result property="score" column="score" jdbcType="INTEGER"/>
+        <result property="creator" column="creator" jdbcType="BIGINT"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="isDelete" column="is_delete" jdbcType="TINYINT"/>
+,    </resultMap>
+
+    <resultMap id="pojo.Tag" tableName="tag">
+        <result property="id" column="id" jdbcType="BIGINT"/>
+        <result property="content" column="content" jdbcType="VARCHAR"/>
+        <result property="creator" column="creator" jdbcType="BIGINT"/>
         <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
         <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
         <result property="isDelete" column="is_delete" jdbcType="TINYINT"/>

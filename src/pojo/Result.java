@@ -1,9 +1,9 @@
-package db;
+package pojo;
 
-public class ResultHelper {
-    String property;
-    String column;
-    String setterName;
+public class Result {
+    private String property;
+    private String column;
+    private String jdbcType;
 
     public String getProperty() {
         return property;
@@ -21,11 +21,11 @@ public class ResultHelper {
         this.column = column;
     }
 
-    public String getSetterName() {
-        return setterName;
+    public String getJdbcType() {
+        return jdbcType;
     }
 
-    public void setSetterName(String setterName) {
-        this.setterName = setterName;
+    public void setJdbcType(String jdbcType) {
+        this.jdbcType = jdbcType;
     }
 }

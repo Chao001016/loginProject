@@ -4,6 +4,11 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import common.BaseResponse;
 import common.Reflect.ProxyWrapper;
+import common.Reflect.ReflectHelper;
+import db.xml.XMLResultMapResolver;
+import org.xml.sax.SAXException;
+import pojo.Question;
+import pojo.Result;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -11,13 +16,15 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
-import java.io.IOException;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,7 +33,7 @@ public abstract class CommonServlet<T> extends HttpServlet {
         super();
     }
 
-    public abstract BaseResponse service(T jsonObject, HttpServletRequest req, HttpServletResponse res) throws SQLException;
+    public abstract BaseResponse service(T jsonObject, HttpServletRequest req, HttpServletResponse res);
 
     private T getGenericType () throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         T superclass = (T) getClass().getGenericSuperclass();
@@ -67,78 +74,95 @@ public abstract class CommonServlet<T> extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        req.setCharacterEncoding("UTF-8");
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
+        try {
+            req.setCharacterEncoding("UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
         resp.setContentType("application/type");
         resp.setCharacterEncoding("UTF-8");
-        JSONObject jsonObject = getParameter(req);
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = getParameter(req);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         BaseResponse br = null;
         ProxyWrapper proxyWrapper;
         // 1.获取泛型类型
-        try {
-            proxyWrapper = getProxyWrapper(jsonObject);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+        proxyWrapper = getProxyWrapper();
         // 2.装配泛型实例
         assembleParameter(proxyWrapper, jsonObject);
+        br = this.service((T) proxyWrapper.getProxy(), req, resp);
         try {
-            br = this.service((T) proxyWrapper.getProxy(), req, resp);
-        } catch (SQLException e) {
+            resp.getWriter().write(JSON.toJSONString(br));
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        resp.getWriter().write(JSON.toJSONString(br));
     }
 
     public void assembleParameter (ProxyWrapper proxyWrapper, JSONObject jsonObject) {
-        jsonObject.entrySet().forEach(info -> {
-            String key = info.getKey();
-            if (key != null) {
-                // 获取set方法
-                String methodName = "set" + key.substring(0, 1).toUpperCase() + key.substring(1);
-                Method m = proxyWrapper.getMethodByName(methodName);
-                try {
-                    m.invoke(proxyWrapper.getProxy(), info.getValue());
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                } catch (InvocationTargetException e) {
-                    throw new RuntimeException(e);
+        XMLResultMapResolver xmlResultMapResolver = new XMLResultMapResolver();
+        ArrayList<Result> resultArrayList = xmlResultMapResolver.getXMLObjList(proxyWrapper.getProxy().getClass());
+        for (Result result : resultArrayList) {
+            String property = result.getProperty();
+            String jdbcType = result.getJdbcType();
+            Object valObj = jsonObject.get(property);
+            String val = null;
+            if (valObj != null) {
+                val = String.valueOf(jsonObject.get(property));
+            }
+            if (val != null) {
+                Method setter = proxyWrapper.getSetterByName(property);
+                switch (jdbcType) {
+                    case "LONG":
+                    case "BIGINT": {
+                        invoke(setter, proxyWrapper.getProxy(), Long.valueOf(val));
+                        break;
+                    }
+                    case "INTEGER": {
+                        invoke(setter, proxyWrapper.getProxy(), Integer.valueOf(val));
+                        break;
+                    }
+                    case "VARCHAR": {
+                        invoke(setter, proxyWrapper.getProxy(), val);
+                        break;
+                    }
+                    default: {
+                        invoke(setter, proxyWrapper.getProxy(), val);
+                    }
                 }
             }
-        });
+        }
     }
 
-    private ProxyWrapper getProxyWrapper (JSONObject jsonObject) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-        ProxyWrapper<T> proxyWrapper = new ProxyWrapper();
-        // 获取泛型类T的权限名
-        T superclass = (T) getClass().getGenericSuperclass();
-        if (superclass instanceof Class) {
-            throw new RuntimeException("Missing type parameter.");
+    public void invoke (Method method, Object obj, Object val) {
+        try {
+            method.invoke(obj, val);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
         }
-        Type type = ((ParameterizedType) superclass).getActualTypeArguments()[0];
+    }
 
-        // 创建泛型类T实例
-        Class clazz = Class.forName(type.getTypeName());
-        T obj = (T)clazz.newInstance();
-        if (obj instanceof JSONObject) {
-            proxyWrapper.setRequestData((T) jsonObject);
-            return proxyWrapper;
+    /**
+     * 获取CommonServlet的泛型类的ProxyWrapper
+     * @return
+     */
+    private ProxyWrapper getProxyWrapper () {
+        // 获取泛型类T的权限名
+        Type superclass = getClass().getGenericSuperclass();
+        Type type = ((ParameterizedType) superclass).getActualTypeArguments()[0];
+        Class clazz = null;
+        try {
+            clazz = Class.forName(type.getTypeName());
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
         }
-        proxyWrapper.setRequestData(obj);
-        // 获取methods
-        Method[] methods = clazz.getDeclaredMethods();
-        Map map = new HashMap<String, Method>();
-        for (int i = 0; i < methods.length; i++) {
-            Method m = methods[i];
-            map.put(m.getName(), m);
-            System.out.println(m.getName());
-        }
-        proxyWrapper.setMethods(map);
-        return proxyWrapper;
+        ReflectHelper reflectHelper = new ReflectHelper(clazz);
+        return reflectHelper.getProxyWrapper();
     }
 
     @Override

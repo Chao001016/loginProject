@@ -1,16 +1,18 @@
 import javax.xml.transform.Result;
 import java.sql.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Main {
     public static void main(String[] args) throws ClassNotFoundException, SQLException {
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/usercenter", "root", "@Lc001016");
-        PreparedStatement pstmt = conn.prepareStatement("select * from user");
-        ResultSet rs = pstmt.executeQuery();
-        while(rs.next()) {
-            String username = rs.getString("username");
-            System.out.println(username);
+        Pattern p = Pattern.compile("^get(.+)");
+        Matcher m = p.matcher("getId");
+        if (m.matches()) {
+            String whole = m.group();
+            String group1 = m.group(1);
+            System.out.println(group1);
+            System.out.println(whole);
         }
-        System.out.println("Hello world!");
+        System.out.println(m.matches());
     }
 }
