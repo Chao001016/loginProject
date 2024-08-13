@@ -27,9 +27,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @WebServlet(urlPatterns = "/queryQuestion", name = "queryQuestion")
 public class QueryQuestionServlet extends CommonServlet<Question> {
+    public static void main(String[] args) {
+
+        // 假设有一个整型数组
+        String[] array = {"1", "2", "3", "4", "5"};
+
+        // 使用Arrays.asList()将数组转换成List
+        ArrayList<String> arrayList = new ArrayList<>(Arrays.asList(array));
+
+        // 输出ArrayList内容
+        System.out.println(arrayList);
+    }
 //    public BaseResponse service(JSONObject jsonObject, HttpServletRequest req, HttpServletResponse res) throws SQLException {
 //        // 1.获取参数
 //        Long id = jsonObject.getLong("id");
@@ -139,7 +151,7 @@ public class QueryQuestionServlet extends CommonServlet<Question> {
 //        Integer state = question.getState();
 //        String analysis = question.getAnalysis();
 //        String options = question.getOptionId();
-//        String tag = question.getTag();
+        String tag = question.getTag();
         // 2.业务逻辑
         // 查询选项不能存在为空的
 //        if (content == null && type == null && score == null &&
@@ -147,19 +159,35 @@ public class QueryQuestionServlet extends CommonServlet<Question> {
 //                options == null && tag == null && id == null) {
 //            return ResultUtils.error(ErrorCode.PARAM_ERROR, "错误的请求参数");
 //        }
+        question.setTag(null);
         // 3.数据库交互
         QueryWrapper queryWrapper = new QueryWrapper(question);
+        queryWrapper.descBy("updateTime");
         ArrayList<Question> arrayList = queryWrapper.executeQuery();
         queryWrapper = new QueryWrapper(Tag.class);
         ArrayList<Tag> tagArrayList = queryWrapper.executeQuery();
         for (Question question1 : arrayList) {
             ArrayList<Tag> tagArrayList1 = new ArrayList<>();
             for (Tag tag1 : tagArrayList) {
-                if (question1.getTag() != null && question1.getTag().indexOf("," + tag1.getId().toString() + ",") > -1) {
-                    tagArrayList1.add(new Tag(tag1));
+                String _tag = question1.getTag();
+                if (_tag != null) {
+                    String[] tagList = question1.getTag().split(",");
+                    ArrayList<String> tagIdList = new ArrayList<>(Arrays.asList(tagList));
+                    if (tagIdList.indexOf(tag1.getId().toString()) > -1) {
+                        tagArrayList1.add(new Tag(tag1));
+                    }
                 }
             }
             question1.setTagArrayList(tagArrayList1);
+        }
+        if (tag != null) {
+            arrayList = (ArrayList<Question>) arrayList.stream().filter((_question) -> {
+                if (_question.getTag() != null) {
+                    ArrayList<String> tagIdList = Common.splitToArrayList(_question.getTag(), ",");
+                    return tagIdList.indexOf(tag) > -1;
+                }
+                return false;
+            }).collect(Collectors.toList());
         }
         // 4.返回参数
         return ResultUtils.success(arrayList);

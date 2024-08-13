@@ -19,6 +19,6 @@ public interface BaseWrapper<T> {
      * 生成语句
      * @return
      */
-    public PreparedStatement generateSQL() throws ParserConfigurationException, IOException, ClassNotFoundException, InvocationTargetException, SAXException, InstantiationException, IllegalAccessException, NoSuchMethodException, SQLException;
+    public PreparedStatement generateSQL();
 
 }

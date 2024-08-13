@@ -14,7 +14,8 @@ import pojo.Question;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Date;
+import java.sql.Date;
+import java.time.LocalDateTime;
 
 @WebServlet(urlPatterns = "/updateQuestionById", name = "updateQuestionById")
 public class UpdateQuestionById extends CommonServlet<Question> {
@@ -30,26 +31,19 @@ public class UpdateQuestionById extends CommonServlet<Question> {
         String analysis = question.getAnalysis();
         String optionId = question.getOptionId();
         String tag = question.getTag();
+        String questionImg = question.getQuestionImg();
         // 2.业务逻辑
         // id 不能为空
         if (id == null) return ResultUtils.error(ErrorCode.PARAM_ERROR, "id不能为空");
-        if (content == null && type == null && score == null &&
-                answer == null && state == null && analysis == null &&
-                optionId == null && tag == null) {
-            return ResultUtils.error(ErrorCode.PARAM_ERROR, "错误的请求参数");
-        }
+//        if (content == null && type == null && score == null &&
+//                answer == null && state == null && analysis == null &&
+//                optionId == null && tag == null) {
+//            return ResultUtils.error(ErrorCode.PARAM_ERROR, "错误的请求参数");
+//        }
         // 3.数据库交互
-        UpdateWrapper updateWrapper = new UpdateWrapper(Question.class);
-        updateWrapper.eq("id", id);
-        if (content != null) updateWrapper.modify("content", content);
-        if (type != null) updateWrapper.modify("type", type);
-        if (score != null) updateWrapper.modify("score", score);
-        if (answer != null) updateWrapper.modify("answer", answer);
-        if (state != null) updateWrapper.modify("state", state);
-        if (analysis != null) updateWrapper.modify("analysis", analysis);
-        if (optionId != null) updateWrapper.modify("optionId", optionId);
-        if (tag != null) updateWrapper.modify("tag", tag);
-        updateWrapper.modify("updateTime", new Date());
+        UpdateWrapper updateWrapper = new UpdateWrapper(question);
+        updateWrapper.modify("updateTime", Common.convertToSQLDateTime(LocalDateTime.now()));
+        updateWrapper.updateById();
         Boolean isSuccess = updateWrapper.executeUpdate();
         if (isSuccess) return ResultUtils.success(null);
         return ResultUtils.error(ErrorCode.UNKNOWN_ERROR, "未知错误");

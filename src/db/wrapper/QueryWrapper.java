@@ -4,6 +4,9 @@ import common.Reflect.ProxyWrapper;
 import common.Reflect.ReflectHelper;
 import db.DataBase;
 import db.wrapper.map.ConditionMap;
+import db.wrapper.queue.OrderQueue;
+import db.wrapper.queue.SortType;
+import db.wrapper.queue.SqlSort;
 import db.xml.XMLResultMapResolver;
 import jdk.nashorn.internal.runtime.regexp.joni.Regex;
 import org.xml.sax.SAXException;
@@ -19,8 +22,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,14 +30,29 @@ public class QueryWrapper<T> implements BaseWrapper<ArrayList> {
     private Class clazz;
     private ConditionMap condition = new ConditionMap();
     private ConditionMap likeCondition = new ConditionMap();
+    // 升序队列
+    private OrderQueue orderQueue = new OrderQueue();
     public static void main(String[] args) throws SQLException, IOException, SAXException, ParserConfigurationException, ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException, NoSuchMethodException {
-        QueryWrapper queryWrapper = new QueryWrapper(Question.class);
-        queryWrapper.addCondition("id", "2");
-        queryWrapper.addCondition("content", "lichao6");
-        ArrayList<Question> questionArrayList = queryWrapper.executeQuery();
-        for (Question question : questionArrayList) {
-            System.out.println(question.getContent());
+        Queue<String> queue = new LinkedList<>();
+        String property;
+        queue.offer("updateTime");
+        queue.offer("createTime");
+        Map<String, Result> resultMap = new XMLResultMapResolver().getXMLObjMap(Question.class);
+        while ((property = queue.poll()) != null) {
+            Result result = resultMap.get(property);
+            String column = result.getColumn();
+            System.out.println(column);
         }
+
+
+
+//        QueryWrapper queryWrapper = new QueryWrapper(Question.class);
+//        queryWrapper.addCondition("id", "2");
+//        queryWrapper.addCondition("content", "lichao6");
+//        ArrayList<Question> questionArrayList = queryWrapper.executeQuery();
+//        for (Question question : questionArrayList) {
+//            System.out.println(question.getContent());
+//        }
     }
     public QueryWrapper(Class clazz) {
         this.clazz = clazz;
@@ -137,6 +154,14 @@ public class QueryWrapper<T> implements BaseWrapper<ArrayList> {
         return arrayList;
     }
 
+    public void descBy (String property) {
+        orderQueue.offer(new SqlSort(SortType.DESC, property));
+    }
+
+    public void ascBy (String property) {
+        orderQueue.offer(new SqlSort(SortType.DESC, property));
+    }
+
     public Object invokeResultSetGet (Method method, Object obj, String column) {
         try {
             return method.invoke(obj, column);
@@ -179,7 +204,10 @@ public class QueryWrapper<T> implements BaseWrapper<ArrayList> {
         XMLResultMapResolver xmlResultMapResolver = new XMLResultMapResolver();
         String tableName = xmlResultMapResolver.getTableName(clazz);
         String sql = "select * from " + tableName;
+        // 查询条件
         sql += condition.increaseSQL(clazz);
+        // 排序字段
+        sql += orderQueue.increaseSQL(clazz);
         PreparedStatement pstt = null;
         try {
             pstt = conn.prepareStatement(sql);
@@ -190,6 +218,4 @@ public class QueryWrapper<T> implements BaseWrapper<ArrayList> {
         condition.setParameter(pstt, i);
         return pstt;
     }
-
-
 }

@@ -7,7 +7,7 @@
           <GenerateConfig>
             <option name="annotationType" value="NONE" />
             <option name="basePackage" value="generator" />
-            <option name="basePath" value="src/mybatisX" />
+            <option name="basePath" value="src/mybat1212" />
             <option name="classNameStrategy" value="camel" />
             <option name="encoding" value="UTF-8" />
             <option name="extraClassSuffix" value="" />
@@ -43,18 +43,19 @@
             </option>
             <option name="needToStringHashcodeEquals" value="true" />
             <option name="needsComment" value="true" />
-            <option name="needsModel" value="false" />
+            <option name="needsModel" value="true" />
             <option name="relativePackage" value="domain" />
             <option name="superClass" value="" />
             <option name="tableUIInfoList">
               <list>
                 <TableUIInfo>
-                  <option name="className" value="Question" />
-                  <option name="tableName" value="question" />
+                  <option name="className" value="Tag" />
+                  <option name="tableName" value="tag" />
                 </TableUIInfo>
               </list>
             </option>
             <option name="templatesName" value="default-empty" />
+            <option name="useLombokPlugin" value="true" />
           </GenerateConfig>
         </option>
         <option name="moduleName" value="loginProject" />

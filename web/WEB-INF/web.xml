@@ -8,6 +8,10 @@
         <servlet-class>servlet.LoginServlet</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>test</servlet-name>
+        <servlet-class>servlet.TestServlet</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>register</servlet-name>
         <servlet-class>servlet.RegisterServlet</servlet-class>
     </servlet>
@@ -19,8 +23,24 @@
         <servlet-name>register</servlet-name>
         <url-pattern>/register</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>test</servlet-name>
+        <url-pattern>/test</url-pattern>
+    </servlet-mapping>
     <context-param>
-        <param-name>appName</param-name>
-        <param-value>test_servlet</param-value>
+        <param-name>mysql_url</param-name>
+        <param-value>jdbc:mysql://localhost:3306/usercenter</param-value>
+    </context-param>
+    <context-param>
+        <param-name>mysql_account</param-name>
+        <param-value>root</param-value>
+    </context-param>
+    <context-param>
+        <param-name>mysql_pwd</param-name>
+        <param-value>@Lc001016</param-value>
+    </context-param>
+    <context-param>
+        <param-name>questionImgDir</param-name>
+        <param-value>D:/usr/local</param-value>
     </context-param>
 </web-app>

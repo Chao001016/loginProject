@@ -1,0 +1,18 @@
+<component name="ArtifactManager">
+  <artifact type="war" build-on-make="true" name="loginProject:war">
+    <output-path>$PROJECT_DIR$/out/artifacts/loginProject_war</output-path>
+    <root id="archive" name="loginProject_war.war">
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="loginProject" />
+        </element>
+        <element id="directory" name="lib">
+          <element id="library" level="project" name="commons-codec-1.15" />
+          <element id="library" level="project" name="fastjson-1.2.83" />
+          <element id="library" level="project" name="mysql-connector-j-8.3.0" />
+        </element>
+      </element>
+      <element id="javaee-facet-resources" facet="loginProject/web/Web" />
+    </root>
+  </artifact>
+</component>

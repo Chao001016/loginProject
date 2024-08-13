@@ -95,7 +95,7 @@ public class InsertWrapper implements BaseWrapper<Long> {
         insertMap.put(key, val);
     }
 
-    public PreparedStatement generateSQL () throws SQLException, ParserConfigurationException, IOException, ClassNotFoundException, InvocationTargetException, SAXException, InstantiationException, IllegalAccessException, NoSuchMethodException {
+    public PreparedStatement generateSQL () {
         Connection conn = DataBase.getConn();
         XMLResultMapResolver xmlResultMapResolver = new XMLResultMapResolver();
         String tableName = xmlResultMapResolver.getTableName(clazz);
@@ -103,7 +103,12 @@ public class InsertWrapper implements BaseWrapper<Long> {
         String sql = "insert into " + tableName;
         sql += insertMap.increaseSQL(clazz);
 
-        PreparedStatement pstt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
+        PreparedStatement pstt = null;
+        try {
+            pstt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         int i = 1;
         insertMap.setParameter(pstt, i);
         return pstt;

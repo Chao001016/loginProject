@@ -67,13 +67,18 @@ public class DeleteWrapper<T> implements BaseWrapper<Integer> {
     }
 
     @Override
-    public PreparedStatement generateSQL () throws ParserConfigurationException, IOException, ClassNotFoundException, InvocationTargetException, SAXException, InstantiationException, IllegalAccessException, NoSuchMethodException, SQLException {
+    public PreparedStatement generateSQL () {
         Connection conn = DataBase.getConn();
         XMLResultMapResolver xmlResultMapResolver = new XMLResultMapResolver();
         String tableName = xmlResultMapResolver.getTableName(clazz);
         String sql = "delete from " + tableName;
         sql += condition.increaseSQL(clazz);
-        PreparedStatement pstt = conn.prepareStatement(sql);
+        PreparedStatement pstt = null;
+        try {
+            pstt = conn.prepareStatement(sql);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         int i = 1;
         condition.setParameter(pstt, i);
         return pstt;

@@ -62,6 +62,10 @@ public class Question implements Serializable {
     */
     private String analysis;
     /**
+     * 题目分析
+     */
+    private String questionImg;
+    /**
      * 标签数组
      */
     private ArrayList<Tag> tagArrayList;
@@ -247,6 +251,14 @@ public class Question implements Serializable {
     */
     public String getAnalysis(){
     return this.analysis;
+    }
+
+    public String getQuestionImg() {
+        return questionImg;
+    }
+
+    public void setQuestionImg(String questionImg) {
+        this.questionImg = questionImg;
     }
 
     public ArrayList<Tag> getTagArrayList() {

@@ -160,7 +160,6 @@ public class XMLResultMapResolver implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         startResolveXML();
-        System.out.println("contextInitialized");
     }
 
     @Override

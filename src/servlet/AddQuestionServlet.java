@@ -116,6 +116,7 @@ public class AddQuestionServlet extends CommonServlet<Question> {
         String analysis = question.getAnalysis();
         String optionId = question.getOptionId();
         String tag = question.getTag();
+        question.setId(null);
 
         // 2.业务逻辑--参数校验
         if (type == null) {
@@ -125,47 +126,8 @@ public class AddQuestionServlet extends CommonServlet<Question> {
             return ResultUtils.error(ErrorCode.PARAM_ERROR, "题目内容不能为空");
         }
         // 3.数据库交互
-        InsertWrapper insertWrapper = new InsertWrapper(Question.class);
-        if (content != null) insertWrapper.put("content", content);
-        if (score != null) insertWrapper.put("score", score);
-        if (answer != null) insertWrapper.put("answer", answer);
-        if (state != null) insertWrapper.put("state", state);
-        if (analysis != null) insertWrapper.put("analysis", analysis);
-        if (optionId != null) insertWrapper.put("optionId", optionId);
-        if (tag != null) insertWrapper.put("tag", tag);
-        if (type != null) insertWrapper.put("type", type);
+        InsertWrapper insertWrapper = new InsertWrapper(question);
         Long id = insertWrapper.execute();
         return ResultUtils.success(id);
-    }
-
-    public static void main(String[] args) throws SQLException {
-        String a = "??";
-        System.out.println(a.replaceFirst("#", "1"));
-        Map map = new HashMap<String ,Object>();
-        map.put("name", "lichao");
-        map.put("age", "18");
-        JSONObject jsonObject = new JSONObject(map);
-        System.out.println(getInsertSql(jsonObject, 2));
-    }
-    private static int getParamNum (JSONObject jsonObject) {
-        AtomicInteger paramNum = new AtomicInteger();
-        jsonObject.entrySet().forEach(info -> {
-            if(info.getValue() != null) {
-                paramNum.getAndIncrement();
-            }
-        });
-        return paramNum.get();
-    }
-    private static String getInsertSql (JSONObject jsonObject, int paramNum) throws SQLException {
-        String sql = "insert into question(#dynamicColumn) values(#dynamicValue)";
-        Character[] paramColumn = new Character[paramNum];
-        Character[] paramValue = new Character[paramNum];
-        Arrays.fill(paramColumn, '#');
-        Arrays.fill(paramValue, '?');
-        String dynamicColumn = Common.join(paramColumn,",");
-        String dynamicValue = Common.join(paramValue,",");
-        sql = sql.replaceAll("#dynamicColumn", dynamicColumn);
-        sql = sql.replaceAll("#dynamicValue", dynamicValue);
-        return sql;
     }
 }

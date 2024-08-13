@@ -98,7 +98,7 @@ public class LoginServlet extends HttpServlet implements ServletRequestListener 
 
     @Override
     public void requestDestroyed(ServletRequestEvent servletRequestEvent) {
-        System.out.println("request destory");
+        System.out.println("request destroy");
     }
 
     @Override

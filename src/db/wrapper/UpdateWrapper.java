@@ -1,6 +1,7 @@
 package db.wrapper;
 
 import common.Common;
+import common.Reflect.ReflectHelper;
 import db.DataBase;
 import db.wrapper.map.ConditionMap;
 import db.wrapper.map.ModifyMap;
@@ -11,14 +12,18 @@ import pojo.Question;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class UpdateWrapper implements BaseWrapper<Boolean> {
     private Class clazz;
+    private Object clazzInstance;
     /**
      * 需要修改的列名
      */
@@ -40,6 +45,46 @@ public class UpdateWrapper implements BaseWrapper<Boolean> {
     }
     public UpdateWrapper(Class clazz) {
         this.clazz = clazz;
+    }
+
+    public UpdateWrapper(Object obj) {
+        this.clazz = obj.getClass();
+        this.clazzInstance = obj;
+        Method[] methods = this.clazz.getDeclaredMethods();
+        for (Method method : methods) {
+            Pattern pattern = Pattern.compile("^get(.+)");
+            Matcher matcher = pattern.matcher(method.getName());
+            if (matcher.matches()) {
+                Object val = ReflectHelper.invokeGet(method, obj);
+                if (val != null) {
+                    String group = matcher.group(1);
+                    String prop = group.substring(0,1).toLowerCase() + group.substring(1);
+                    if (prop.equals("id"))
+                    eq(prop, val);
+                }
+            }
+        }
+    }
+
+    public Boolean updateById () {
+        Method[] methods = this.clazz.getDeclaredMethods();
+        for (Method method : methods) {
+            Pattern pattern = Pattern.compile("^get(.+)");
+            Matcher matcher = pattern.matcher(method.getName());
+            if (matcher.matches()) {
+                Object val = ReflectHelper.invokeGet(method, this.clazzInstance);
+                if (val != null) {
+                    String group = matcher.group(1);
+                    String prop = group.substring(0, 1).toLowerCase() + group.substring(1);
+                    if (!prop.equals("id")) {
+                        modify(prop, val);
+                    } else {
+                        eq(prop, val);
+                    }
+                }
+            }
+        }
+        return execute();
     }
 
     @Override
